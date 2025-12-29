@@ -32,7 +32,7 @@ export default async function DetaskedNavbar(props: DetaskedNavbarProps) {
 				className="flex-1"
 				justify="center"
 			>
-				<BoardTitle className="text-4xl" />
+				<BoardTitle className="text-4xl overflow-ellipsis whitespace-nowrap" />
 			</NavbarContent>
 			<NavbarContent
 				justify="end"
