@@ -94,7 +94,7 @@ export default function DetaskedBookmarkList(props: DetaskedBookmarkListProps) {
 				<DetaskedBookmarkItem
 					key={b.uuid}
 					boardItem={b}
-					className={`h-20 px-4 ${b.uuid === boardState?.uuid ? "bg-primary" : ""}`}
+					className={`h-20 ps-4 ${b.uuid === boardState?.uuid ? "bg-primary" : ""}`}
 					onNavigate={onNavigate(i)}
 					onTitleUpdate={onTitleUpdate(i)}
 					onDelete={onDelete(i)}

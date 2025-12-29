@@ -48,6 +48,7 @@ export default function DetaskedBookmarkItem(
 				eventName="onClick"
 				onHandle={onDelete}
 				isIconOnly
+				className="h-full rounded-none data-[hover=true]:bg-red-700 data-[hover=true]:text-white"
 			>
 				<DeleteFilled />
 			</AsyncButton>
@@ -55,6 +56,7 @@ export default function DetaskedBookmarkItem(
 				variant="light"
 				onClick={onNavigate}
 				isIconOnly
+				className="h-full rounded-none"
 			>
 				<RightOutlined />
 			</Button>
