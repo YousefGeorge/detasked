@@ -16,7 +16,7 @@ import DetaskedNavbarMenu from "./DetaskedNavbarMenu";
 export type DetaskedNavbarProps = Omit<NextUINavbarProps, "children">;
 
 export default async function DetaskedNavbar(props: DetaskedNavbarProps) {
-	const className = `bg-primary dark:bg-slate-800 ${props.className}`;
+	const className = `bg-primary dark:bg-slate-800 dark:text-white ${props.className}`;
 
 	return (
 		<Navbar
