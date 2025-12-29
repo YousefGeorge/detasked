@@ -1,58 +1,73 @@
 "use server";
 
-import boardKv from "../kv/board";
-import userKv from "../kv/user";
+import * as pg from "drizzle-orm";
+
+import db from "../db";
+import { boards } from "../db/schema/boards";
+import { userBoards } from "../db/schema/user_boards";
+import { UserSchemaError } from "../db/schema/users";
+import { insertDefaultBoard } from "../db/utils/default_board";
 import { getSessionId } from "../middleware/session_middleware";
-import defaultBoard from "../misc/default_board";
-import { BoardItemSchema } from "../schemas/board";
-import { PrivateIdSchema, UserSchemaError } from "../schemas/user";
 import { ServerActionResult } from "./types";
 
 export async function createBookmarkSa(): Promise<
-	ServerActionResult<UserSchemaError.INVALID_PRIVATE_ID, BoardItemSchema>
+	ServerActionResult<UserSchemaError.INVALID_ID, typeof boards.$inferInsert>
 > {
-	const privateId = getSessionId() ?? "";
-	const { success: validId } = PrivateIdSchema.safeParse(privateId);
+	const userId = getSessionId();
 
-	if (!validId) {
-		return { status: "error", error: UserSchemaError.INVALID_PRIVATE_ID };
+	if (!userId) {
+		return { status: "error", error: UserSchemaError.INVALID_ID };
 	}
 
-	const boardId = await boardKv.create(defaultBoard);
-	const boardItem = { id: boardId, title: defaultBoard.title };
-
-	await userKv.addBookmarks(privateId, boardId);
+	const newBoard = await insertDefaultBoard(userId);
+	const boardItem = { uuid: newBoard.uuid, title: newBoard.title };
 
 	return { status: "success", content: boardItem };
 }
 
 export async function deleteBookmarkSa(boardId: string) {
-	const privateId = getSessionId();
-	const privateIdValid = PrivateIdSchema.safeParse(privateId).success;
+	const userId = getSessionId();
 
-	if (!privateId || !privateIdValid) {
-		return;
+	if (!userId) {
+		return { status: "error", error: UserSchemaError.INVALID_ID };
 	}
 
-	await userKv.deleteBookmarks(privateId, boardId);
-	await boardKv.delete(boardId);
+	await db
+		.delete(userBoards)
+		.where(
+			pg.and(
+				pg.eq(userBoards.userId, userId),
+				pg.eq(userBoards.boardId, boardId),
+			),
+		);
+
+	const { count: remainingBoardUsersCount } = (
+		await db
+			.select({ count: pg.count() })
+			.from(userBoards)
+			.where(pg.eq(userBoards.boardId, boardId))
+	)[0];
+	if (remainingBoardUsersCount == 0) {
+		db.delete(boards).where(pg.eq(boards.uuid, boardId));
+	}
 }
 
 export async function getBookmarksSa(): Promise<
-	ServerActionResult<UserSchemaError.INVALID_PRIVATE_ID, BoardItemSchema[]>
+	ServerActionResult<UserSchemaError.INVALID_ID, (typeof boards.$inferSelect)[]>
 > {
-	const privateId = getSessionId() ?? "";
-	const { success: validId } = PrivateIdSchema.safeParse(privateId);
+	const userId = getSessionId() ?? "";
 
-	if (!validId) {
-		return { status: "error", error: UserSchemaError.INVALID_PRIVATE_ID };
+	if (!userId) {
+		return { status: "error", error: UserSchemaError.INVALID_ID };
 	}
 
-	const bookmarks = (
-		await Promise.all(
-			(await userKv.getBookmarks(privateId)).map(boardKv.getItem),
-		)
-	).filter(b => typeof b !== "undefined");
+	const bookmarks = await db.query.boards.findMany({
+		where: {
+			users: {
+				uuid: userId,
+			},
+		},
+	});
 
 	return { status: "success", content: bookmarks };
 }

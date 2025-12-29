@@ -1,26 +1,54 @@
 "use server";
 
-import boardKv from "../kv/board";
-import BoardSchema, { BoardIdSchema, BoardSchemaError } from "../schemas/board";
-import { ServerActionResult } from "./types";
+import * as pg from "drizzle-orm";
 
-const isProduction = process.env.NODE_ENV == "production";
+import db from "../db";
+import {
+	boards,
+	BoardSchemaError,
+	BoardUpdateSchema,
+} from "../db/schema/boards";
+import {
+	ColumnInsertSchema,
+	columns,
+	ColumnSchemaError,
+	ColumnUpdateSchema,
+} from "../db/schema/columns";
+import {
+	NoteInsertSchema,
+	notes,
+	NoteSchemaError,
+	NoteUpdateSchema,
+} from "../db/schema/notes";
+import { DirtyColumn, DirtyNote, temper } from "./dirty";
+import { ExtendedBoard, ServerActionResult } from "./types";
 
 export async function getBoardSa(
 	boardId: string,
-): Promise<ServerActionResult<BoardSchemaError, BoardSchema>> {
-	const { success: validId, error } = BoardIdSchema.safeParse(boardId);
+): Promise<ServerActionResult<BoardSchemaError, ExtendedBoard>> {
+	const board = await db.query.boards.findFirst({
+		with: {
+			columns: {
+				with: {
+					notes: {
+						orderBy: {
+							order: "asc",
+						},
+					},
+				},
+				orderBy: {
+					order: "asc",
+				},
+			},
+		},
+		where: {
+			uuid: boardId,
+		},
+	});
 
-	if (!validId) {
-		return {
-			status: "error",
-			error: isProduction
-				? BoardSchemaError.UNK
-				: (error as unknown as BoardSchemaError),
-		};
+	if (!board) {
+		return { status: "error", error: BoardSchemaError.NOT_FOUND };
 	}
-
-	const board = await boardKv.get(boardId);
 
 	return {
 		status: "success",
@@ -28,27 +56,78 @@ export async function getBoardSa(
 	};
 }
 
-export async function updateBoardSa(
+export async function updateBoardTitleSa(
 	boardId: string,
-	board: Partial<BoardSchema>,
+	newTitle: string,
 ): Promise<ServerActionResult<BoardSchemaError>> {
-	const { success: validId, error: idError } = BoardIdSchema.safeParse(boardId);
-	const { success: validBoard, error: boardError } =
-		BoardSchema.partial().safeParse(board);
+	const parsedData = BoardUpdateSchema.safeParse({
+		title: newTitle,
+	});
 
-	if (!validId) {
+	if (!parsedData.success) {
 		return {
 			status: "error",
-			error: idError.message as unknown as BoardSchemaError,
-		};
-	} else if (!validBoard) {
-		return {
-			status: "error",
-			error: boardError.message as unknown as BoardSchemaError,
+			error: parsedData.error.message as unknown as BoardSchemaError,
 		};
 	}
-
-	await boardKv.update(boardId, board);
+	await db
+		.update(boards)
+		.set(parsedData.data)
+		.where(pg.eq(boards.uuid, boardId));
 
 	return { status: "success" };
+}
+
+export async function applyModificationsSa(
+	modifications: (DirtyColumn | DirtyNote)[],
+): Promise<ServerActionResult<ColumnSchemaError | NoteSchemaError | unknown>> {
+	try {
+		await db.transaction(async tx => {
+			for (const mod of modifications) {
+				if (mod.type == "column") {
+					await applyColumnModificationSa(tx, mod);
+				} else if (mod.type == "note") {
+					await applyNoteModification(tx, mod);
+				}
+			}
+		});
+	} catch (error) {
+		return { status: "error", error };
+	}
+
+	return { status: "success" };
+}
+
+async function applyColumnModificationSa(
+	tx: Parameters<Parameters<(typeof db)["transaction"]>["0"]>["0"],
+	mod: DirtyColumn,
+) {
+	const result = await temper(
+		tx,
+		columns,
+		ColumnInsertSchema,
+		ColumnUpdateSchema,
+		mod,
+	);
+
+	if (result.status == "error") {
+		throw new Error(result.error as ColumnSchemaError);
+	}
+}
+
+async function applyNoteModification(
+	tx: Parameters<Parameters<(typeof db)["transaction"]>["0"]>["0"],
+	mod: DirtyNote,
+) {
+	const result = await temper(
+		tx,
+		notes,
+		NoteInsertSchema,
+		NoteUpdateSchema,
+		mod,
+	);
+
+	if (result.status == "error") {
+		throw new Error(result.error as NoteSchemaError);
+	}
 }

@@ -1,10 +1,10 @@
 import React, { HTMLAttributes } from "react";
 
+import { columns } from "@/lib/db/schema/columns";
 import { gochiHand } from "@/lib/fonts";
-import { type ColumnSchema } from "@/lib/schemas/board";
 
 export type KanbanColumnTitleProps = HTMLAttributes<HTMLDivElement> & {
-	column: ColumnSchema;
+	column: typeof columns.$inferSelect;
 };
 
 export default function KanbanColumnTitle(props: KanbanColumnTitleProps) {
@@ -13,11 +13,15 @@ export default function KanbanColumnTitle(props: KanbanColumnTitleProps) {
 	const className =
 		`text-black text-5xl text-center content-center rounded-t-2xl ` +
 		`${gochiHand.className} ${divProps.className ?? ""}`;
+	const backgroundColor = React.useMemo(
+		() => `#${column.headerColor.toString(16)}`,
+		[column.headerColor],
+	);
 
 	return (
 		<div
 			{...divProps}
-			style={{ backgroundColor: column.headerColor, ...divProps.style }}
+			style={{ backgroundColor, ...divProps.style }}
 			className={className}
 		>
 			{column.title.toUpperCase()}

@@ -6,15 +6,15 @@ import GenericMutableProvider, {
 	GenericMutableProviderContextType,
 	GenericMutableProviderProps,
 } from "@/components/GenericMutableProvider";
-import { type BoardItemSchema } from "@/lib/schemas/board";
+import { boards } from "@/lib/db/schema/boards";
 
 export type BoardProviderProps = Omit<
-	GenericMutableProviderProps<BoardItemSchema[]>,
+	GenericMutableProviderProps<(typeof boards.$inferSelect)[]>,
 	"context"
 >;
 
 const context = React.createContext<
-	GenericMutableProviderContextType<BoardItemSchema[]>
+	GenericMutableProviderContextType<(typeof boards.$inferSelect)[]>
 >([[], () => null]);
 
 export default function BookmarksProvider(props: BoardProviderProps) {

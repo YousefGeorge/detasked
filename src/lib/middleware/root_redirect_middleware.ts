@@ -1,8 +1,9 @@
+import "server-only";
+
 import { NextResponse, type NextRequest } from "next/server";
 
-import boardKv from "../kv/board";
-import userKv from "../kv/user";
-import defaultBoard from "../misc/default_board";
+import db from "../db";
+import { insertDefaultBoard } from "../db/utils/default_board";
 import { buildBoardPageUrl } from "../paths";
 import { getSessionId } from "./session_middleware";
 
@@ -15,24 +16,26 @@ export default async function rootRedirectMiddleware(
 		return response;
 	}
 
-	const privateId = getSessionId([response.cookies, request.cookies]);
+	const userId = getSessionId([response.cookies, request.cookies]);
 
-	if (!privateId) {
+	if (!userId) {
 		// Session middleware should always run before this one
 		throw "Unexpected state: session is null";
 	}
 
-	const bookmarkIds = await userKv.getBookmarks(privateId);
-	let bookmarkId;
+	const bookmark = await db.query.boards.findFirst({
+		where: {
+			users: {
+				uuid: userId,
+			},
+		},
+	});
 
 	// If no bookmarks, create a new board,
 	// otherwise, select the first board from the bookmarks set
-	if (bookmarkIds.length == 0) {
-		bookmarkId = await boardKv.create(defaultBoard);
-
-		await userKv.addBookmarks(privateId, bookmarkId);
-	} else {
-		bookmarkId = bookmarkIds[0];
+	let bookmarkId = bookmark?.uuid;
+	if (!bookmarkId) {
+		bookmarkId = (await insertDefaultBoard(userId)).uuid;
 	}
 
 	const url = buildBoardPageUrl(bookmarkId);

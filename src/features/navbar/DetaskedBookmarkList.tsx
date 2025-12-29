@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 import { buildBoardPageUrl } from "@/lib/paths";
-import { updateBoardSa } from "@/lib/sa/board";
+import { updateBoardTitleSa } from "@/lib/sa/board";
 import { deleteBookmarkSa } from "@/lib/sa/user";
 import { useBoard } from "../board/BoardProvider";
 import { useBookmarks } from "./BookmarksProvider";
@@ -24,10 +24,10 @@ export default function DetaskedBookmarkList(props: DetaskedBookmarkListProps) {
 		"divide-y divide-solid divide-foreground/20" + ` ${props.className}`;
 
 	const onNavigate = (i: number) => () =>
-		router.push(buildBoardPageUrl(bookmarks[i].id));
+		router.push(buildBoardPageUrl(bookmarks[i].uuid));
 	const onTitleUpdate = (i: number) => async (title: string) => {
 		try {
-			const res = await updateBoardSa(bookmarks[i].id, { title });
+			const res = await updateBoardTitleSa(bookmarks[i].uuid, title);
 
 			if (res.status == "error") {
 				toast("Failed :/");
@@ -39,7 +39,7 @@ export default function DetaskedBookmarkList(props: DetaskedBookmarkListProps) {
 		}
 
 		// If editing the title of the open board
-		if (bookmarks[i].id === boardState?.boardId) {
+		if (bookmarks[i].uuid === boardState?.uuid) {
 			setBoardState({
 				...boardState,
 				title,
@@ -53,18 +53,17 @@ export default function DetaskedBookmarkList(props: DetaskedBookmarkListProps) {
 		});
 	};
 	const onDelete = (i: number) => async () => {
-		const boardId = bookmarks[i].id;
+		const boardId = bookmarks[i].uuid;
 
 		await deleteBookmarkSa(boardId);
 		setBookmarks(bs => {
 			bs.splice(i, 1);
 
-			if (boardId === boardState?.boardId) {
+			if (boardId === boardState?.uuid) {
 				if (bs.length === 0) {
 					setBoardState(null);
 				} else {
-					console.log(bs[0].id);
-					router.push(buildBoardPageUrl(bs[0].id));
+					router.push(buildBoardPageUrl(bs[0].uuid));
 				}
 			}
 
@@ -93,9 +92,9 @@ export default function DetaskedBookmarkList(props: DetaskedBookmarkListProps) {
 		>
 			{bookmarks.map((b, i) => (
 				<DetaskedBookmarkItem
-					key={b.id}
+					key={b.uuid}
 					boardItem={b}
-					className={`h-20 px-4 ${b.id === boardState?.boardId ? "bg-primary" : ""}`}
+					className={`h-20 px-4 ${b.uuid === boardState?.uuid ? "bg-primary" : ""}`}
 					onNavigate={onNavigate(i)}
 					onTitleUpdate={onTitleUpdate(i)}
 					onDelete={onDelete(i)}

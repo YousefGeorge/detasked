@@ -10,8 +10,9 @@ import {
 } from "@dnd-kit/sortable";
 import { Button } from "@nextui-org/react";
 
-import { genDefaultNote } from "@/lib/misc/default_board";
-import { type ColumnSchema, type NoteSchema } from "@/lib/schemas/board";
+import { notes } from "@/lib/db/schema/notes";
+import { ExtendedColumn } from "@/lib/sa/types";
+import { genDefaultNote } from "@/lib/utils/default_board";
 import KanbanColumnTitle from "./KanbanColumnTitle";
 import KanbanNote, { SortableData } from "./KanbanNote";
 import SortableKanbanNote from "./SortableKanbanNote";
@@ -20,10 +21,10 @@ export type KanbanColumnProps = Omit<
 	React.HTMLAttributes<HTMLDivElement>,
 	"children"
 > & {
-	column: ColumnSchema;
+	column: ExtendedColumn;
 	onNoteAdd?: (position: number) => void;
 	onNoteDelete?: (position: number) => void;
-	onNoteEdit?: (position: number, note: NoteSchema) => void;
+	onNoteEdit?: (position: number, note: typeof notes.$inferSelect) => void;
 };
 
 const AddNoteButton = (props: { onClick?: () => void }) => (
@@ -38,10 +39,10 @@ const AddNoteButton = (props: { onClick?: () => void }) => (
 	</Button>
 );
 
-const dummyNote = (
+const genDummyNote = (columnId: string) => (
 	<KanbanNote
 		key={"dummy"}
-		note={genDefaultNote()}
+		note={genDefaultNote(columnId)}
 		displayRepresentation={true}
 		className="h-32 outline-secondary"
 	/>
@@ -59,6 +60,10 @@ export default function KanbanColumn(props: KanbanColumnProps) {
 	const activeNodeData = active?.data.current as SortableData | null;
 	const draggableOwner = activeNodeData?.sortable.containerId === column.uuid;
 	const draggableOverColumn = over?.id === column.uuid;
+	const dummyNote = React.useMemo(
+		() => genDummyNote(column.uuid),
+		[column.uuid],
+	);
 
 	return (
 		<div

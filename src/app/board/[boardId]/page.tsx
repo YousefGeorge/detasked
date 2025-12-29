@@ -1,4 +1,5 @@
 import BoardProvider from "@/features/board/BoardProvider";
+import DirtyBoardObjectsProvider from "@/features/board/DirtyBoardObjectsProvider";
 import KanbanBoard from "@/features/board/KanbanBoard";
 import BookmarksProvider from "@/features/navbar/BookmarksProvider";
 import DetaskedNavbar from "@/features/navbar/DetaskedNavbar";
@@ -27,12 +28,14 @@ export default async function BoardPage(props: {
 
 	return (
 		<BoardProvider initialValue={boardState}>
-			<BookmarksProvider initialValue={bookmarks}>
-				<div className="h-dvh flex flex-col">
-					<DetaskedNavbar position="static" />
-					<KanbanBoard className="min-h-0 flex-1" />
-				</div>
-			</BookmarksProvider>
+			<DirtyBoardObjectsProvider initialValue={{}}>
+				<BookmarksProvider initialValue={bookmarks}>
+					<div className="h-dvh flex flex-col">
+						<DetaskedNavbar position="static" />
+						<KanbanBoard className="min-h-0 flex-1" />
+					</div>
+				</BookmarksProvider>
+			</DirtyBoardObjectsProvider>
 		</BoardProvider>
 	);
 }

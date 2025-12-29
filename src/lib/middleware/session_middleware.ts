@@ -7,7 +7,8 @@ import {
 import { cookies } from "next/headers";
 import { type NextRequest, type NextResponse } from "next/server";
 
-import userKv from "../kv/user";
+import db from "../db";
+import { users } from "../db/schema/users";
 
 export const SESSION_COOKIE_KEY = "_SESSION";
 
@@ -24,10 +25,15 @@ export default async function sessionMiddleware(
 	request: NextRequest,
 	response: NextResponse,
 ): Promise<NextResponse> {
-	if (!request.cookies.has(SESSION_COOKIE_KEY)) {
-		const { privateId } = await userKv.create();
+	const userId = request.cookies.get(SESSION_COOKIE_KEY)?.value;
+	const sessionValid =
+		userId && (await db.query.users.findFirst({ where: { uuid: userId } }));
 
-		response.cookies.set(SESSION_COOKIE_KEY, privateId, {
+	if (!sessionValid) {
+		const user: typeof users.$inferInsert = { uuid: crypto.randomUUID() };
+		await db.insert(users).values(user);
+
+		response.cookies.set(SESSION_COOKIE_KEY, user.uuid, {
 			secure: true,
 			sameSite: true,
 		});

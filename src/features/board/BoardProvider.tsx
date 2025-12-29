@@ -6,13 +6,12 @@ import GenericMutableProvider, {
 	GenericMutableProviderContextType,
 	GenericMutableProviderProps,
 } from "@/components/GenericMutableProvider";
-import type BoardSchema from "@/lib/schemas/board";
+import { ExtendedBoard } from "@/lib/sa/types";
 
 export type BoardState =
-	| (BoardSchema & {
-			boardId: string;
+	| (ExtendedBoard & {
 			modified: boolean;
-			original: BoardSchema;
+			original: ExtendedBoard;
 	  })
 	| null;
 export type BoardProviderProps = Omit<

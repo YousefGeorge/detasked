@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 import AsyncButton, { AsyncButtonProps } from "@/components/AsyncButton";
+import { UserSchemaError } from "@/lib/db/schema/users";
 import { buildBoardPageUrl } from "@/lib/paths";
 import { createBookmarkSa } from "@/lib/sa/user";
-import { UserSchemaError } from "@/lib/schemas/user";
 import { useBoard } from "../board/BoardProvider";
 import { useBookmarks } from "./BookmarksProvider";
 
@@ -29,7 +29,7 @@ export default function NewBookmarkButton(props: NewBookmarkButtonProps) {
 		}
 
 		if (bookmarkRes.status === "error") {
-			if (bookmarkRes.error === UserSchemaError.INVALID_PRIVATE_ID) {
+			if (bookmarkRes.error === UserSchemaError.INVALID_ID) {
 				toast("Where da cookie?");
 			} else {
 				toast("What just happened :?");
@@ -43,7 +43,7 @@ export default function NewBookmarkButton(props: NewBookmarkButtonProps) {
 		setBookmarks(bs => [...bs, boardItem]);
 
 		if (!boardState) {
-			router.push(buildBoardPageUrl(boardItem.id));
+			router.push(buildBoardPageUrl(boardItem.uuid));
 		}
 	};
 

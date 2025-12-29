@@ -5,8 +5,9 @@ import React from "react";
 import { Button, ButtonProps, Spinner } from "@nextui-org/react";
 import { toast } from "react-toastify";
 
-import { updateBoardSa } from "@/lib/sa/board";
+import { applyModificationsSa } from "@/lib/sa/board";
 import { useBoard } from "./BoardProvider";
+import { useDirtyBoardObjects } from "./DirtyBoardObjectsProvider";
 
 export type SaveBoardModificationsButton = Omit<ButtonProps, "onClick">;
 
@@ -15,6 +16,7 @@ export default function SaveBoardModificationsButton(
 ) {
 	const { className: classNameOverrides, children, ...otherProps } = props;
 	const [boardState, setBoardState] = useBoard();
+	const [dirtyObjects] = useDirtyBoardObjects();
 	const [isSaving, setSaving] = React.useState(false);
 
 	const visible = boardState && boardState.modified;
@@ -27,10 +29,7 @@ export default function SaveBoardModificationsButton(
 		setSaving(true);
 		let res;
 		try {
-			res = await updateBoardSa(boardState.boardId, {
-				title: boardState.title,
-				columns: boardState.columns,
-			});
+			res = await applyModificationsSa(Object.values(dirtyObjects));
 		} catch {
 			toast("Network error :/");
 			setSaving(false);
@@ -42,6 +41,7 @@ export default function SaveBoardModificationsButton(
 				...boardState,
 				modified: false,
 				original: {
+					uuid: boardState.uuid,
 					title: boardState.title,
 					columns: structuredClone(boardState.columns),
 				},

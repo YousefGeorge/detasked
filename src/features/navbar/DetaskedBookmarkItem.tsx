@@ -5,14 +5,14 @@ import { Button } from "@nextui-org/react";
 
 import AsyncButton from "@/components/AsyncButton";
 import TogglableInput from "@/components/TogglableInput";
+import { boards } from "@/lib/db/schema/boards";
 import { gochiHand } from "@/lib/fonts";
-import { BoardItemSchema } from "@/lib/schemas/board";
 
 export type DetaskedNavbarMenuItemProps = Omit<
 	React.HtmlHTMLAttributes<HTMLDivElement>,
 	"children"
 > & {
-	boardItem: BoardItemSchema;
+	boardItem: typeof boards.$inferSelect;
 	onNavigate?: () => void;
 	onTitleUpdate?: (newTitle: string) => void;
 	onDelete?: () => Promise<void>;

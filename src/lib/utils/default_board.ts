@@ -1,24 +1,28 @@
-import { type BoardSchema, type NoteSchema } from "../schemas/board";
-
-export const genDefaultNote = () => ({
+export const genDefaultNote = (columnId: string, order?: number) => ({
 	uuid: crypto.randomUUID(),
+	columnId: columnId,
 	content: "New note",
-} as NoteSchema);
+	order: order ?? 0,
+});
 
-export const defaultBoard: BoardSchema = {
+export const genDefaultBoard = () => ({
+	uuid: crypto.randomUUID(),
 	title: "New Board",
 	columns: [
 		{
 			uuid: crypto.randomUUID(),
 			title: "backlog",
-			headerColor: "#f48897",
+			order: 0,
+			headerColor: parseInt("f48897", 16),
 			notes: [
 				{
 					uuid: crypto.randomUUID(),
+					order: 0,
 					content: "Add a new note",
 				},
 				{
 					uuid: crypto.randomUUID(),
+					order: 1,
 					content: "Edit a note",
 				},
 			],
@@ -26,7 +30,8 @@ export const defaultBoard: BoardSchema = {
 		{
 			uuid: crypto.randomUUID(),
 			title: "todo",
-			headerColor: "#f4e688",
+			order: 1,
+			headerColor: parseInt("f4e688", 16),
 			notes: [
 				{
 					uuid: crypto.randomUUID(),
@@ -37,7 +42,8 @@ export const defaultBoard: BoardSchema = {
 		{
 			uuid: crypto.randomUUID(),
 			title: "doing",
-			headerColor: "#88f48e",
+			order: 2,
+			headerColor: parseInt("88f48e", 16),
 			notes: [
 				{
 					uuid: crypto.randomUUID(),
@@ -48,10 +54,9 @@ export const defaultBoard: BoardSchema = {
 		{
 			uuid: crypto.randomUUID(),
 			title: "done",
-			headerColor: "#88e2f4",
+			order: 3,
+			headerColor: parseInt("88e2f4", 16),
 			notes: [],
 		},
 	],
-};
-
-export default defaultBoard;
+});

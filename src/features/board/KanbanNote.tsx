@@ -12,22 +12,22 @@ import { SortableData as DnDSortableData } from "@dnd-kit/sortable";
 import { Button } from "@nextui-org/react";
 
 import TogglableTextarea from "@/components/TogglableTextarea";
+import { notes } from "@/lib/db/schema/notes";
 import { gochiHand } from "@/lib/fonts";
-import { type NoteSchema } from "@/lib/schemas/board";
 
 export type KanbanNoteProps = Omit<
 	React.HTMLAttributes<HTMLDivElement>,
 	"children"
 > & {
-	note: NoteSchema;
+	note: typeof notes.$inferSelect;
 	onNoteDelete?: () => void;
-	onNoteEdit?: (note: NoteSchema) => void;
+	onNoteEdit?: (note: typeof notes.$inferSelect) => void;
 	displayRepresentation?: boolean;
 	moveNoteListeners?: SyntheticListenerMap;
 };
 
 export type SortableData = DnDSortableData & {
-	note: NoteSchema;
+	note: typeof notes.$inferSelect;
 };
 
 const KanbanNote = React.forwardRef<HTMLDivElement, KanbanNoteProps>(
