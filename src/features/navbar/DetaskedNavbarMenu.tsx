@@ -10,7 +10,7 @@ export type DetaskedNavbarMenuProps = Omit<NavbarMenuProps, "children">;
 export default function DetaskedNavbarMenu(props: DetaskedNavbarMenuProps) {
 	const { className: classNameOverrides, ...otherProps } = props;
 
-	const className = "flex flex-col w-1/4 p-0" + ` ${classNameOverrides ?? ""}`;
+	const className = "flex flex-col w-64 p-0" + ` ${classNameOverrides ?? ""}`;
 
 	return (
 		<NavbarMenu

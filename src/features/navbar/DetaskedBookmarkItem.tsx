@@ -40,7 +40,7 @@ export default function DetaskedBookmarkItem(
 		>
 			<TogglableInput
 				value={boardItem.title}
-				className="flex-auto bg-transparent whitespace-nowrap text-2xl text-ellipsis text-foreground overflow-hidden pe-8"
+				className="flex-1 min-w-0 bg-transparent whitespace-nowrap text-2xl text-ellipsis text-foreground overflow-collapse"
 				onCommit={onTitleUpdate}
 			/>
 			<AsyncButton
