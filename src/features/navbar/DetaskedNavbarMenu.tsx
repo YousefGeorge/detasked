@@ -2,8 +2,8 @@ import React from "react";
 
 import { NavbarMenu, NavbarMenuProps } from "@nextui-org/react";
 
-import NewBookmarkButton from "./NewBookmarkButton";
 import DetaskedBookmarkList from "./DetaskedBookmarkList";
+import NewBookmarkButton from "./NewBookmarkButton";
 
 export type DetaskedNavbarMenuProps = Omit<NavbarMenuProps, "children">;
 
