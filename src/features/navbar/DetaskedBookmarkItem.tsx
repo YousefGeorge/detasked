@@ -40,7 +40,7 @@ export default function DetaskedBookmarkItem(
 		>
 			<TogglableInput
 				value={boardItem.title}
-				className="flex-1 min-w-0 bg-transparent whitespace-nowrap text-2xl text-ellipsis text-foreground overflow-collapse"
+				className="flex-1 min-w-0 bg-transparent whitespace-nowrap text-2xl text-ellipsis overflow-collapse"
 				onCommit={onTitleUpdate}
 			/>
 			<AsyncButton
@@ -48,7 +48,7 @@ export default function DetaskedBookmarkItem(
 				eventName="onClick"
 				onHandle={onDelete}
 				isIconOnly
-				className="h-full rounded-none data-[hover=true]:bg-red-700 data-[hover=true]:text-white"
+				className="h-full rounded-none text-inherit data-[hover=true]:bg-red-700 data-[hover=true]:text-white"
 			>
 				<DeleteFilled />
 			</AsyncButton>
@@ -56,7 +56,7 @@ export default function DetaskedBookmarkItem(
 				variant="light"
 				onClick={onNavigate}
 				isIconOnly
-				className="h-full rounded-none"
+				className="h-full rounded-none text-inherit"
 			>
 				<RightOutlined />
 			</Button>

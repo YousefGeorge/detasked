@@ -49,13 +49,10 @@ export default function NewBookmarkButton(props: NewBookmarkButtonProps) {
 
 	return (
 		<AsyncButton
-			className="rounded-none"
+			className="rounded-none text-white"
 			color="primary"
 			onHandle={onCreate}
 			eventName="onClick"
-			spinnerProps={{
-				color: "white",
-			}}
 			{...props}
 		>
 			<PlusOutlined />
