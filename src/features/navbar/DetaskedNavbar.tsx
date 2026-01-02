@@ -43,6 +43,7 @@ export default async function DetaskedNavbar(props: DetaskedNavbarProps) {
 						variant="light"
 						size="lg"
 						isIconOnly
+						className="text-inherit"
 					>
 						<UndoOutlined />
 					</UndoBoardModificationsButton>
@@ -50,6 +51,7 @@ export default async function DetaskedNavbar(props: DetaskedNavbarProps) {
 						variant="light"
 						size="lg"
 						isIconOnly
+						className="text-inherit"
 					>
 						<SaveFilled />
 					</SaveBoardModificationsButton>
