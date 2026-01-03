@@ -1,5 +1,7 @@
 import React, { HTMLAttributes } from "react";
 
+import { useDroppable } from "@dnd-kit/core";
+
 import { columns } from "@/lib/db/schema/columns";
 import { gochiHand } from "@/lib/fonts";
 
@@ -9,9 +11,13 @@ export type KanbanColumnTitleProps = HTMLAttributes<HTMLDivElement> & {
 
 export default function KanbanColumnTitle(props: KanbanColumnTitleProps) {
 	const { column, ...divProps } = props;
+	const { setNodeRef } = useDroppable({
+		id: column.uuid,
+	});
 
 	const className =
-		`text-black text-5xl text-center content-center rounded-t-2xl ` +
+		`text-black text-base font-bold text-center content-center ` +
+		`overflow-hidden text-ellipsis text-nowrap  ` +
 		`${gochiHand.className} ${divProps.className ?? ""}`;
 	const backgroundColor = React.useMemo(
 		() => `#${column.headerColor.toString(16)}`,
@@ -19,12 +25,13 @@ export default function KanbanColumnTitle(props: KanbanColumnTitleProps) {
 	);
 
 	return (
-		<div
+		<h2
 			{...divProps}
+			ref={setNodeRef}
 			style={{ backgroundColor, ...divProps.style }}
 			className={className}
 		>
 			{column.title.toUpperCase()}
-		</div>
+		</h2>
 	);
 }

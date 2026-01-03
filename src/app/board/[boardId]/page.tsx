@@ -30,7 +30,7 @@ export default async function BoardPage(props: {
 		<BoardProvider initialValue={boardState}>
 			<DirtyBoardObjectsProvider initialValue={{}}>
 				<BookmarksProvider initialValue={bookmarks}>
-					<div className="h-dvh flex flex-col">
+					<div className="h-dvh flex flex-col bg-slate-100 dark:bg-slate-900">
 						<DetaskedNavbar position="static" />
 						<KanbanBoard className="min-h-0 flex-1" />
 					</div>

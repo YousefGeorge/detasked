@@ -13,7 +13,6 @@ import { Button } from "@nextui-org/react";
 import { notes } from "@/lib/db/schema/notes";
 import { ExtendedColumn } from "@/lib/sa/types";
 import { genDefaultNote } from "@/lib/utils/default_board";
-import KanbanColumnTitle from "./KanbanColumnTitle";
 import KanbanNote, { SortableData } from "./KanbanNote";
 import SortableKanbanNote from "./SortableKanbanNote";
 
@@ -71,11 +70,7 @@ export default function KanbanColumn(props: KanbanColumnProps) {
 			className={className}
 			ref={setNodeRef}
 		>
-			<KanbanColumnTitle
-				column={column}
-				className="p-4"
-			/>
-			<div className="flex-1 overflow-auto rounded-b-xl bg-slate-300 dark:bg-slate-700">
+			<div className="flex-1 overflow-x-hidden overflow-y-auto">
 				<SortableContext
 					id={column.uuid}
 					items={sortableContextItems}
@@ -96,7 +91,7 @@ export default function KanbanColumn(props: KanbanColumnProps) {
 							<SortableKanbanNote
 								key={note.uuid}
 								note={note}
-								className="h-32 text-foreground"
+								className="h-32 text-foreground touch-none"
 								onNoteDelete={() => onNoteDelete?.(noteIndex)}
 								onNoteEdit={note => onNoteEdit?.(noteIndex, note)}
 								displayRepresentation={note.uuid === activeNodeData?.note.uuid}

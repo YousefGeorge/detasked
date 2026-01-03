@@ -9,18 +9,29 @@ import { applyModificationsSa } from "@/lib/sa/board";
 import { useBoard } from "./BoardProvider";
 import { useDirtyBoardObjects } from "./DirtyBoardObjectsProvider";
 
-export type SaveBoardModificationsButton = Omit<ButtonProps, "onClick">;
+export type SaveBoardModificationsButton = Omit<ButtonProps, "onClick"> & {
+	visibleClassName?: string;
+	collapsedClassName?: string;
+};
 
 export default function SaveBoardModificationsButton(
 	props: SaveBoardModificationsButton,
 ) {
-	const { className: classNameOverrides, children, ...otherProps } = props;
+	const {
+		className: classNameOverrides,
+		visibleClassName,
+		collapsedClassName,
+		children,
+		...otherProps
+	} = props;
 	const [boardState, setBoardState] = useBoard();
 	const [dirtyObjects] = useDirtyBoardObjects();
 	const [isSaving, setSaving] = React.useState(false);
 
 	const visible = boardState && boardState.modified;
-	const visibility = visible ? "visible" : "collapse";
+	const visibility = visible
+		? `visible ${visibleClassName ?? ""}`
+		: `collapse ${collapsedClassName ?? ""}`;
 	const className = `${visibility} ${classNameOverrides ?? ""}`;
 
 	const save = async () => {

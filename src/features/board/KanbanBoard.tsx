@@ -5,6 +5,7 @@ import React from "react";
 import {
 	DndContext,
 	DragEndEvent,
+	DragOverEvent,
 	DragOverlay,
 	DragStartEvent,
 } from "@dnd-kit/core";
@@ -15,6 +16,7 @@ import { genDefaultNote } from "@/lib/utils/default_board";
 import { useBoard } from "./BoardProvider";
 import { useDirtyBoardObjects } from "./DirtyBoardObjectsProvider";
 import KanbanColumn from "./KanbanColumn";
+import KanbanColumnTitle from "./KanbanColumnTitle";
 import KanbanNote, { SortableData } from "./KanbanNote";
 
 export type KanbanBoardProps = Omit<
@@ -26,6 +28,7 @@ export default function KanbanBoard(props: KanbanBoardProps) {
 	const [boardState, setBoardState] = useBoard();
 	const [dragData, setDragData] = React.useState<SortableData>();
 	const [, setDirtyObjects] = useDirtyBoardObjects();
+	const [selectedColumn, setSelectedColumn] = React.useState(0);
 	const updateDirtyObject = (key: string, value: DirtyColumn | DirtyNote) =>
 		setDirtyObjects(dirtyObjects => {
 			const notOnDataBase =
@@ -106,6 +109,16 @@ export default function KanbanBoard(props: KanbanBoardProps) {
 	};
 	const onNoteDragStart = (e: DragStartEvent) =>
 		setDragData(e.active.data.current as SortableData);
+	const onNoteDragOver = (e: DragOverEvent) => {
+		const { over } = e;
+
+		if (over && over.id) {
+			const idx = boardState.columns.findIndex(c => c.uuid == over.id);
+			if (idx != -1) {
+				setSelectedColumn(idx);
+			}
+		}
+	};
 	const onNoteDragEnd = (e: DragEndEvent) => {
 		const { active, over } = e;
 
@@ -166,28 +179,62 @@ export default function KanbanBoard(props: KanbanBoardProps) {
 	};
 
 	return (
-		<div
-			{...props}
-			className={`flex gap-3 p-4 bg-slate-100 dark:bg-slate-900 ${props.className ?? ""}`}
+		<DndContext
+			onDragStart={onNoteDragStart}
+			onDragOver={onNoteDragOver}
+			onDragEnd={onNoteDragEnd}
 		>
-			<DndContext
-				onDragStart={onNoteDragStart}
-				onDragEnd={onNoteDragEnd}
-			>
-				{boardState.columns.map((col, colIdx) => (
-					<KanbanColumn
-						key={col.uuid}
-						column={col}
-						className="flex-1"
-						onNoteAdd={pos => onNoteAdd(colIdx, col.uuid, pos)}
-						onNoteDelete={pos => onNoteDelete(colIdx, pos)}
-						onNoteEdit={(pos, note) => onNoteEdit(colIdx, pos, note)}
-					/>
-				))}
-				<DragOverlay>
-					{dragData && <KanbanNote note={dragData.note} />}
-				</DragOverlay>
-			</DndContext>
-		</div>
+			<div className="flex flex-col flex-1">
+				<div
+					className={
+						"flex " +
+						"rounded-full overflow-hidden m-2 fixed left-0 right-0 " +
+						"sm:rounded-none sm:m-0 sm:static " +
+						"sm:gap-3 sm:p-4 sm:pb-0 sm:bg-inherit"
+					}
+				>
+					{boardState.columns.map((column, idx) => (
+						<KanbanColumnTitle
+							key={column.uuid}
+							column={column}
+							className={
+								"flex-1 p-4 sm:rounded-t-xl transition-opacity duration-700 " +
+								"sm:opacity-100 " +
+								"hover:opacity-100 " +
+								(selectedColumn == idx ? "opacity-100" : "opacity-60")
+							}
+							onClick={() => setSelectedColumn(idx)}
+						/>
+					))}
+				</div>
+				<div
+					{...props}
+					className={
+						`flex flex-1 overflow-hidden sm:gap-x-3 sm:p-4 sm:pt-0 ` +
+						`${props.className ?? ""}`
+					}
+				>
+					{boardState.columns.map((col, colIdx) => (
+						<KanbanColumn
+							key={col.uuid}
+							column={col}
+							className={
+								"flex-1 sm:rounded-b-xl overflow-hidden " +
+								"bg-slate-300 dark:bg-slate-700 " +
+								(colIdx == selectedColumn
+									? "pt-14 sm:pt-0"
+									: "collapse max-w-0 sm:visible sm:max-w-none")
+							}
+							onNoteAdd={pos => onNoteAdd(colIdx, col.uuid, pos)}
+							onNoteDelete={pos => onNoteDelete(colIdx, pos)}
+							onNoteEdit={(pos, note) => onNoteEdit(colIdx, pos, note)}
+						/>
+					))}
+					<DragOverlay>
+						{dragData && <KanbanNote note={dragData.note} />}
+					</DragOverlay>
+				</div>
+			</div>
+		</DndContext>
 	);
 }

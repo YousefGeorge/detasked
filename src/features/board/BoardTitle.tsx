@@ -13,7 +13,7 @@ export type BoardTitleProps = Omit<
 export default function BoardTitle(props: BoardTitleProps) {
 	const [boardState] = useBoard();
 
-	const className = `text-center ${gochiHand.className} ${props.className}`;
+	const className = `${gochiHand.className} ${props.className}`;
 
 	return (
 		<p
